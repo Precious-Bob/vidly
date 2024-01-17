@@ -6,7 +6,10 @@ const morgan = require('morgan');
 const mongoose = require('mongoose');
 const genres = require('./routes/genres');
 const customers = require('./routes/customers');
+const auth = require('./controllers/authController');
 const movies = require('./routes/movies');
+const rentals = require('./routes/rentals');
+const users = require('./routes/users');
 
 const dotenv = require('dotenv');
 dotenv.config();
@@ -41,6 +44,9 @@ app.use(express.json()); // This middleware enables JSON request body parsing
 app.use('/api/genres', genres);
 app.use('/api/customers', customers);
 app.use('/api/movies', movies);
+app.use('/api/rentals', rentals);
+app.use('/api/users', users);
+app.use('/api/auth', auth);
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {

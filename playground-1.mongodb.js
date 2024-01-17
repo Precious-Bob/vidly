@@ -6,6 +6,19 @@ db.getCollection('genres').find();
 
 db.createCollection('customers');
 
+use('vidlyGenres');
+db.users.deleteMany({});
+
+use('vidlyGenres');  
+db.users.findOneAndUpdate(
+  { email: "precioustest2@gmail.com" },  
+  { $set: { admin: true } },  
+  { returnNewDocument: true }  
+)
+
+
+
+
 // Run a find command to view items sold on April 4th, 2014.
 // const salesOnApril4th = db
 //   .getCollection('sales')
