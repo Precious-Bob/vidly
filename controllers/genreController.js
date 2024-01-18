@@ -16,7 +16,7 @@ exports.createGenre = async (req, res) => {
   }
 };
 
-exports.getAllGenres = async (req, res) => {
+exports.getAllGenres = async (req, res, next) => {
   try {
     const genres = await Genre.find().sort('name');
     return res.status(200).json({
@@ -25,9 +25,10 @@ exports.getAllGenres = async (req, res) => {
         genres,
       },
     });
-  } catch (error) {
-    console.error('Error fetching genres from the database', error);
+  } catch (ex) {
+    console.error('Error fetching genres from the database', ex);
     res.status(500).send('Internal Server Error');
+    next(ex);
   }
 };
 
