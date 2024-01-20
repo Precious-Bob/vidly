@@ -1,17 +1,19 @@
 const Rental = require('../models/rentalModel');
-const { MongoClient } = require('mongodb');
+const { catchAsync } = require('../middleware/catchAsync');
+const AppError = require('../middleware/AppError');
 
-exports.getAllRentals = async (req, res) => {
+
+exports.getAllRentals = catchAsync(async (req, res, next) => {
   const rentals = await Rental.find().sort('-dateOut');
   res.send(rentals);
-};
+});
 
-exports.createRental = async (req, res) => {
+exports.createRental = catchAsync(async (req, res, next) => {
   const customer = await Customer.findById(req.body.customerId);
-  if (!customer) return res.status(400).send('Invalid customer.');
+  if (!customer) return next(new AppError('Invalid customer', 404));
 
   const movie = await Movie.findById(req.body.movieId);
-  if (!movie) return res.status(400).send('Invalid movie.');
+  if (!movie) return next(new AppError('Invalid movie', 404));
 
   if (movie.numberInStock === 0)
     return res.status(400).send('Movie not in stock.');
@@ -19,42 +21,34 @@ exports.createRental = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
 
-  try {
-    const rental = new Rental({
-      customer: {
-        _id: customer._id,
-        name: customer.name,
-        phone: customer.phone,
-      },
-      movie: {
-        _id: movie._id,
-        title: movie.title,
-        dailyRentalRate: movie.dailyRentalRate,
-      },
-    });
+  const rental = new Rental({
+    customer: {
+      _id: customer._id,
+      name: customer.name,
+      phone: customer.phone,
+    },
+    movie: {
+      _id: movie._id,
+      title: movie.title,
+      dailyRentalRate: movie.dailyRentalRate,
+    },
+  });
 
-    await rental.save({ session });
-    await Movie.updateOne(
-      { _id: movie._id },
-      { $inc: { numberInStock: -1 } },
-      { session }
-    );
+  await rental.save({ session });
+  await Movie.updateOne(
+    { _id: movie._id },
+    { $inc: { numberInStock: -1 } },
+    { session }
+  );
 
-    await session.commitTransaction();
-    res.send(rental);
-  } catch (error) {
-    await session.abortTransaction();
-    res.status(500).send('Error creating rental');
-  } finally {
-    session.endSession();
-  }
-};
+  await session.commitTransaction();
+  res.send(rental);
+});
 
-exports.getRental = async (req, res) => {
+exports.getRental = catchAsync(async (req, res, next) => {
   const rental = await Rental.findById(req.params.id);
 
-  if (!rental)
-    return res.status(404).send('The rental with the given ID was not found.');
+  if (!rental) return next(new AppError('No movie found with that ID', 404));
 
   res.send(rental);
-};
+});

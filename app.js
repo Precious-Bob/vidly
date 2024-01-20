@@ -1,21 +1,19 @@
-const { error } = require('./middleware/error');
 const helmet = require('helmet');
 //const Joi = require('joi');
 const express = require('express');
 const app = express();
 const morgan = require('morgan');
-const mongoose = require('mongoose');
 const genres = require('./routes/genres');
 const customers = require('./routes/customers');
 const auth = require('./controllers/authController');
 const movies = require('./routes/movies');
 const rentals = require('./routes/rentals');
 const users = require('./routes/users');
-
+const AppError = require('./middleware/AppError');
 const dotenv = require('dotenv');
 dotenv.config();
 
-app.use(helmet());
+require('./startup/database')();
 
 //! import morgan first then run this
 if (app.get('env') === 'development') {
@@ -27,20 +25,7 @@ if (app.get('env') === 'development') {
 // console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
 // console.log(`app: ${app.get('env')}`);
 
-const DB = process.env.DATABASE.replace(
-  '<password>',
-  process.env.DATABASE_PASSWORD
-);
-
-mongoose
-  .connect(DB)
-  .then((con) => {
-    console.log('DB connection successful');
-  })
-  .catch((error) => {
-    console.error('Error connecting to the database', error);
-  });
-
+app.use(helmet());
 app.use(express.json()); // This middleware enables JSON request body parsing
 app.use('/api/genres', genres);
 app.use('/api/customers', customers);
@@ -48,7 +33,7 @@ app.use('/api/movies', movies);
 app.use('/api/rentals', rentals);
 app.use('/api/users', users);
 app.use('/api/auth', auth);
-app.use(error);
+app.use(AppError);
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {

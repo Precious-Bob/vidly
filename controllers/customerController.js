@@ -1,90 +1,73 @@
 const Customer = require('../models/customerModel');
+const { catchAsync } = require('../middleware/catchAsync');
+const AppError = require('../middleware/AppError');
 
-exports.getAllCustomers = async (req, res) => {
-  try {
-    const customers = await Customer.find().sort('name');
-    return res.status(200).json({
-      status: 'success',
-      data: {
-        customers,
-      },
-    });
-  } catch (error) {
-    console.error('Error fetching customers from the database', error);
-    res.status(500).send('Internal Server Error');
-  }
-};
+exports.getAllCustomers = catchAsync(async (req, res) => {
+  const customers = await Customer.find().sort('name');
+  return res.status(200).json({
+    status: 'success',
+    data: {
+      customers,
+    },
+  });
+});
 
-exports.createCustomer = async (req, res) => {
-  try {
-    let customer = new Customer({
-      name: req.body.name,
-      isGold: req.body.isGold,
-      phone: req.body.phone,
-    });
-    customer = await customer.save();
-    return res.status(200).json({
-      status: 'success',
-      data: {
-        customer,
-      },
-    });
-  } catch (err) {
-    console.error('Error creating customer', err);
-    res.status(500).send('Internal Server Error');
-  }
-};
+exports.createCustomer = catchAsync(async (req, res) => {
+  let customer = new Customer({
+    name: req.body.name,
+    isGold: req.body.isGold,
+    phone: req.body.phone,
+  });
+  customer = await customer.save();
+  return res.status(200).json({
+    status: 'success',
+    data: {
+      customer,
+    },
+  });
+});
 
-exports.getCustomer = async (req, res) => {
+exports.getCustomer = catchAsync(async (req, res) => {
   const customer = await Customer.findById(req.params.id);
   if (!customer)
-    return res
-      .status(404)
-      .send('The customer with the given id was not found!');
-  return res.status(200).json({
+    return next(new AppError('No customer found with that ID', 404));
+  res.status(200).json({
     status: 'success',
     data: {
       customer,
     },
   });
-};
-
-exports.deleteCustomer = async (req, res) => {
+});
+//comment
+exports.deleteCustomer = catchAsync(async (req, res) => {
   const customer = await Customer.findByIdAndDelete(req.params.id);
   if (!customer)
-    return res
-      .status(404)
-      .send('The customer with the given id was not found!');
-  return res.status(200).json({
+    return next(new AppError('No customer found with that ID', 404));
+  res.status(200).json({
     status: 'success',
     data: {
       customer,
     },
   });
-};
+});
 
-exports.patchCustomer = async (req, res) => {
-  try {
-    const customer = await Customer.findByIdAndUpdate(
-      req.params.id,
-      {
-        name: req.body.name,
-        isGold: req.body.isgold,
-        phone: req.body.phone,
-      },
-      { new: true }
-    );
-    if (!customer)
-      return res
-        .status(404)
-        .send('The customer with the given id was not found!');
-    return res.status(200).json({
-      status: 'success',
-      data: {
-        customer,
-      },
-    });
-  } catch (err) {
-    console.error('Error updating customer', err);
-  }
-};
+exports.patchCustomer = catchAsync(async (req, res) => {
+  const customer = await Customer.findByIdAndUpdate(
+    req.params.id,
+    {
+      name: req.body.name,
+      isGold: req.body.isgold,
+      phone: req.body.phone,
+    },
+    { new: true }
+  );
+  if (!customer)
+    return next(new AppError('No customer found with that ID', 404));
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      customer,
+    },
+  });
+});
