@@ -19,6 +19,7 @@ db.users.findOneAndUpdate(
 
 
 
+
 // Run a find command to view items sold on April 4th, 2014.
 // const salesOnApril4th = db
 //   .getCollection('sales')

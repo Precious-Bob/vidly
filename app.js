@@ -12,8 +12,9 @@ const users = require('./routes/users');
 const AppError = require('./middleware/AppError');
 const dotenv = require('dotenv');
 dotenv.config();
-
 require('./startup/database')();
+
+require('./startup/logging')();
 
 //! import morgan first then run this
 if (app.get('env') === 'development') {
@@ -36,6 +37,8 @@ app.use('/api/auth', auth);
 app.use(AppError);
 
 const port = process.env.PORT || 3000;
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`Listening on port ${port}`);
 });
+
+module.exports = server
