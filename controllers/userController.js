@@ -15,7 +15,6 @@ exports.signup = catchAsync(async (req, res, next) => {
     'Content-Type': 'application/json',
     'x-auth-token': token,
   });
-
   res.status(201).json({ message: 'User registered successfully', user: user });
 });
 
