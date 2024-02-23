@@ -4,7 +4,7 @@ const AppError = require('../middleware/AppError');
 
 exports.signup = catchAsync(async (req, res, next) => {
   let { name, email, password } = req.body;
-  let user = await User.findOne({ email: email });
+  let user = await User.findOne({ email });
   if (user) return res.status(400).send('User already registered');
   user = new User({ name, email, password });
   await user.save();
